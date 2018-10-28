@@ -12,8 +12,13 @@
  */
 import { app, BrowserWindow } from 'electron';
 import MenuBuilder from './menu';
+process.env.BCOIN_NO_NATIVE = '1';
 
 let mainWindow = null;
+
+global.shared = {
+  appData: app.getPath('appData')
+};
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -63,7 +68,11 @@ app.on('ready', async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
-    height: 728
+    height: 728,
+    minWidth: 1024,
+    minHeight: 728,
+    resizable: false,
+    backgroundColor: '#30404d',
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);

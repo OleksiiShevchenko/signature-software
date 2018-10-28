@@ -1,0 +1,44 @@
+.keys {
+  .container {
+    padding: 1em 0;
+  }
+
+  .inputContainer {
+    margin: 1em 0;
+  }
+
+  .listContainer {
+    max-height: 350px;
+    overflow: auto;
+  }
+
+  .keyListItem {
+    margin: 0.5em 0;
+    position: relative;
+
+    .delete {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+    }
+  }
+
+  .keysCols {
+    margin-top: 1em;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+
+    & > div {
+      width: 49%;
+
+      .container {
+        padding: 1em 0;
+      }
+
+      .inputContainer {
+        margin: 1em 0;
+      }
+    }
+  }
+}

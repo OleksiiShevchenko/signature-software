@@ -1,13 +1,10 @@
-// @flow
 import * as React from 'react';
+import 'reset-css';
 
-type Props = {
-  children: React.Node
-};
+import { FocusStyleManager } from "@blueprintjs/core";
+FocusStyleManager.onlyShowFocusOnTabs();
 
-export default class App extends React.Component<Props> {
-  props: Props;
-
+export default class App extends React.Component {
   render() {
     const { children } = this.props;
     return <React.Fragment>{children}</React.Fragment>;

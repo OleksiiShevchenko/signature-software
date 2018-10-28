@@ -1,4 +1,5 @@
 {
   "HOME": "/",
-  "COUNTER": "/counter"
+  "KEYS": "/keys",
+  "SIGN": "/sign"
 }
