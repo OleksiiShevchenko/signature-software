@@ -1,5 +1,4 @@
 .transaction {
-
   .container {
     padding: 1em 0;
   }
@@ -9,16 +8,4 @@
     padding: 0.2em;
     width: 49%;
   }
-
-  .cols {
-    margin-top: 1em;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-
-    & > div {
-      width: 49%;
-    }
-  }
-
 }

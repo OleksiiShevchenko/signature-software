@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+import DataBTC from '../btcData';
+import DataETH from '../ethData';
 import styles from './transaction.scss';
 import {
-  Card,
   Classes,
   H5,
   H4,
@@ -20,30 +21,6 @@ export default class Transaction extends Component {
     super(props);
     this.handleChange = this.handleChange.bind(this);
     this.sign = this.sign.bind(this);
-  }
-
-  renderInputs () {
-    const { tx } = this.props;
-    if (!tx) return;
-    return tx.inputs.map(input => {
-      return (
-        <li key={input.address}>
-          <div><b>Address: </b>{input.address}</div>
-          <div><b>Amount: </b>{input.value}</div>
-        </li>
-      );
-    });
-  }
-
-  renderOutputs () {
-    const { tx } = this.props;
-    if (!tx) return;
-    return (
-      <div>
-        <div><b>Address: </b>{tx.address}</div>
-        <div><b>Amount: </b>{tx.amount}</div>
-      </div>
-    );
   }
 
   handleChange (e) {
@@ -73,20 +50,7 @@ export default class Transaction extends Component {
       <div className={styles.transaction}>
         <H4>Transaction data:</H4>
         <div>
-          <div className={styles.cols}>
-            <Card elevation={1} interactive={false}>
-              <H5>Inputs</H5>
-              <ul>
-                {this.renderInputs()}
-              </ul>
-            </Card>
-            <Card elevation={1} interactive={false}>
-              <H5>Outputs</H5>
-              <ul>
-                {this.renderOutputs()}
-              </ul>
-            </Card>
-          </div>
+          {(tx.currency === 'BTC') ? <DataBTC tx={tx}/> : <DataETH tx={tx} />}
           <div className={styles.container}>
 
             <div className={styles.inputContainer}>
@@ -100,20 +64,23 @@ export default class Transaction extends Component {
               </HTMLSelect>
             </div>
 
-            <div className={styles.inputContainer}>
-              <InputGroup
-                onChange={this.handleChange}
-                placeholder="Passphrase"
-                data-field="passphrase"
-                type="password"
-                value={passphrase}
-              />
-            </div>
+            {currentKey !== 'ledger'
+              ?
+              <div className={styles.inputContainer}>
+                <InputGroup
+                  onChange={this.handleChange}
+                  placeholder="Passphrase"
+                  data-field="passphrase"
+                  type="password"
+                  value={passphrase}/>
+              </div>
+              : ''
+            }
 
             <div className={styles.inputContainer}>
               <Button onClick={this.sign}
                       icon="tick"
-                      disabled={!passphrase || !currentKey}
+                      disabled={ (currentKey !== 'ledger' && !passphrase) || !currentKey}
                       text="Sign Transaction"/>
             </div>
 

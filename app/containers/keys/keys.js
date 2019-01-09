@@ -65,7 +65,7 @@ export default class Keys extends Component {
     const { keys } = this.props;
     return keys.map((item, i) => {
       return (
-        <li key={item} className={styles.keyListItem}>
+        <li key={item + i} className={styles.keyListItem}>
           <Callout>
             <div><b>{item}</b></div>
             <div className={styles.delete}>

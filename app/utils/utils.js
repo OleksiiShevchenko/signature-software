@@ -1,9 +1,15 @@
+
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 import bcoin from 'bcoin';
+import ethUtil from 'ethereumjs-util';
+import ledger from './ledger';
+
+const createKeccakHash = require('keccak');
 
 const PrivateKey = bcoin.hd.PrivateKey;
+const PublicKey = bcoin.hd.PublicKey;
 
 const { getGlobal } = require('electron').remote;
 const appData = getGlobal('shared').appData;
@@ -44,7 +50,8 @@ export const getKeysList = () => {
   }
 };
 
-export const getSignKeysList = (tx) => {
+export async function getSignKeysList (tx) {
+
   try {
     const dir = path.resolve(appData, 'signatureSoftware');
     const files = fs.readdirSync(dir);
@@ -52,12 +59,51 @@ export const getSignKeysList = (tx) => {
       return readKeysFromFile(file);
     });
 
-    const txKeys = tx.masterPubKeys;
-    const filtered = data.filter(item => {
-      return (txKeys.indexOf(item.pubBTC) >= 0 || txKeys.indexOf(item.pubBTC) >= 0);
-    });
+    if (ledger.isConnected()) {
+      const ledgerFile = {
+        name: 'ledger'
+      };
 
-    return filtered;
+      if (tx.currency === 'ETH') {
+        const ledgerXpubETH = await ledger.getXPUB("m/44'/60'/0'/0", 'ETH');
+        ledgerFile.pubETH = ledgerXpubETH;
+      } else {
+        const ledgerXpubBTC = await ledger.getXPUB("m/44'/0'/0'/0", 'BTC');
+        ledgerFile.pubBTC = ledgerXpubBTC;
+      }
+
+      data.push(ledgerFile);
+    }
+
+    console.log(data, 'keys');
+
+    let filtered = [];
+
+    if (tx.currency === 'BTC') {
+      const txKeys = tx.masterPubKeys;
+
+      filtered = data.filter(item => {
+        return txKeys.indexOf(item.pubBTC) >= 0;
+      });
+    }
+
+    if (tx.currency === 'ETH') {
+      const DERIVATION_INDEX = 0;
+      const masterAddresses = tx.masterAddresses.map(item => item.checksumAddress);
+
+      filtered = data.filter(item => {
+        let address;
+
+        const keyBuffer = PublicKey.fromBase58(item.pubETH, NETWORK).derive(DERIVATION_INDEX).publicKey;
+        address = ethUtil.publicToAddress(keyBuffer, true);
+        const formattedAddress = `0x${address.toString('hex')}`;
+        const checksumAddress = ethToChecksumAddress(formattedAddress);
+        return masterAddresses.indexOf(checksumAddress) >= 0;
+
+      });
+    }
+
+    return Promise.resolve(filtered);
 
   } catch (e) {
     console.error(e);
@@ -127,3 +173,18 @@ export const rewriteTxFile = function (tx, path) {
 };
 
 
+export const ethToChecksumAddress = function (address) {
+  address = address.toLowerCase().replace('0x', '');
+  const hash = createKeccakHash('keccak256').update(address).digest('hex');
+  let result = '0x';
+
+  for (let i = 0; i < address.length; i++) {
+    if (parseInt(hash[i], 16) >= 8) {
+      result += address[i].toUpperCase();
+    } else {
+      result += address[i];
+    }
+  }
+
+  return result
+};

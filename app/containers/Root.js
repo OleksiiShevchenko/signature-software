@@ -1,16 +1,14 @@
-// @flow
+
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'react-router-redux';
-import type { Store } from '../reducers/types';
 import Routes from '../Routes';
+import Ledger from './../utils/ledger';
 
-type Props = {
-  store: Store,
-  history: {}
-};
+Ledger.init();
 
-export default class Root extends Component<Props> {
+
+export default class Root extends Component {
   render() {
     const { store, history } = this.props;
     return (
