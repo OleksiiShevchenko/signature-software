@@ -25,6 +25,7 @@ const network = 'main';
 const m = 2;
 const n = 3;
 const btcPath = `m/44'/0'/0'/0`;
+const ethPath = `m/44'/60'/0'/0`;
 
 
 export function signBTC(key, tx, path) {
@@ -257,12 +258,19 @@ async function signSegwitBTC(key, tx, path) {
 
 
 export async function signETH(key, tx, path) {
+  const isLedger = key.currentKey === 'ledger';
 
   const firstSignature = !tx.signatures || tx.signatures.length === 0;
 
-  const keyData = readKeysFromFile(`${key.currentKey}.json`);
-  const mnemonic = keyDecrypt(keyData.hash, key.passphrase);
-  const privateKey = HDPrivateKey.fromPhrase(mnemonic, network).derivePath(`m/44'/60'/0'/0`).derive(0);
+  let keyData;
+  let mnemonic;
+  let privateKey;
+
+  if (!isLedger) {
+    keyData = readKeysFromFile(`${key.currentKey}.json`);
+    mnemonic = keyDecrypt(keyData.hash, key.passphrase);
+    privateKey = HDPrivateKey.fromPhrase(mnemonic, network).derivePath(`m/44'/60'/0'/0`).derive(0);
+  }
 
   const amount = parseInt(tx.amount);
   const sequenceId = parseInt(tx.sequenceId);
@@ -273,13 +281,13 @@ export async function signETH(key, tx, path) {
     const toAddress = tx.address;
     const expireTime = Math.floor((new Date().getTime()) / 1000) + 3600 * 24;
 
-    console.log({
-      toAddress,
-      amount,
-      data,
-      expireTime,
-      sequenceId
-    }, 'operation hash params');
+    // console.log({
+    //   toAddress,
+    //   amount,
+    //   data,
+    //   expireTime,
+    //   sequenceId
+    // }, 'operation hash params');
 
     const operationHash = getSha3ForConfirmationTx(
       toAddress,
@@ -306,7 +314,14 @@ export async function signETH(key, tx, path) {
     const gasPrice = 20000000000;//tx.fees.gasPrice;
     const gasLimit = 6721975;//tx.fees.gasLimit;
 
-    const pubKey = privateKey.toPublic().publicKey;
+    let pubKey;
+    if (isLedger) {
+      const xpub = await ledger.getXPUB(ethPath, 'ETH');
+      pubKey = HDPublicKey.fromBase58(xpub, network).derive(0).publicKey;
+    } else {
+      pubKey = privateKey.toPublic().publicKey;
+    }
+
     const address = ethUtil.publicToAddress(pubKey, true);
     const keyAddress = ethToChecksumAddress(`0x${address.toString('hex')}`);
 
@@ -314,14 +329,14 @@ export async function signETH(key, tx, path) {
       return item.checksumAddress === keyAddress;
     });
 
-    console.log({
-      toAddress,
-      amount: ethUtil.addHexPrefix(coinsToWei(amount).toString(16)),
-      data,
-      expireTime: tx.expireTime,
-      sequenceId,
-      sig: tx.signatures[0],
-    }, 'sendMultisig params');
+    // console.log({
+    //   toAddress,
+    //   amount: ethUtil.addHexPrefix(coinsToWei(amount).toString(16)),
+    //   data,
+    //   expireTime: tx.expireTime,
+    //   sequenceId,
+    //   sig: tx.signatures[0],
+    // }, 'sendMultisig params');
 
     const txData = walletInstance.sendMultiSig.request(
       toAddress,
@@ -333,7 +348,7 @@ export async function signETH(key, tx, path) {
       {from: keyAddress}
     );
 
-    console.log(txData, 'txdata result');
+    // console.log(txData, 'txdata result');
 
     const txParams = {
       nonce: ethUtil.addHexPrefix(Number(fromData[0].nonce).toString(16)),
@@ -344,16 +359,43 @@ export async function signETH(key, tx, path) {
       value: ethUtil.addHexPrefix(Number(0).toString(16)),
       data: txData.params[0].data,
       // EIP 155 chainId - mainnet: 1, ropsten: 3
-      //chainId: 3
+      chainId: 1
     };
 
-    console.log(txParams, 'tx params');
+    //console.log(txParams, 'tx params');
 
-    const rawTx = new ethTx(txParams);
-    rawTx.sign(privateKey.privateKey);
+    let rawTx;
+
+    if (isLedger) {
+      rawTx = new ethTx(txParams);
+      rawTx.v = 1;
+      rawTx.r = 0;
+      rawTx.s = 0;
+
+      const serializedTx = rawTx.serialize();
+      const rawTxHex = serializedTx.toString('hex');
+
+      const signature = await ledger.eth.signTransaction("m/44'/60'/0'/0/0", rawTxHex);
+
+      signature.v = new Buffer(signature.v, 'hex');
+      signature.r = new Buffer(signature.r, 'hex');
+      signature.s = new Buffer(signature.s, 'hex');
+
+      // if (txParams.chainId > 0) {
+      //   signature.v += txParams.chainId * 2 + 8;
+      // }
+
+      console.log(signature, 'RESULT');
+
+
+      Object.assign(rawTx, signature);
+
+    } else {
+      rawTx = new ethTx(txParams);
+      rawTx.sign(privateKey.privateKey);
+    }
 
     const serializedTx = rawTx.serialize();
-
     const rawTxHash = ethUtil.addHexPrefix(serializedTx.toString('hex'));
 
     console.log(ethUtil.addHexPrefix(serializedTx.toString('hex')), 'rawTx');

@@ -38,7 +38,7 @@ export default class Transaction extends Component {
     const { keys } = this.props;
     if (!keys) return;
     return keys.map(key => {
-      return (<option key={key.hash} value={key.name}>{key.name}</option>);
+      return (<option key={key.name} value={key.name}>{key.name}</option>);
     });
   }
 
