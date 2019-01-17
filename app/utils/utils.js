@@ -1,4 +1,3 @@
-
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
@@ -11,7 +10,7 @@ const createKeccakHash = require('keccak');
 const PrivateKey = bcoin.hd.PrivateKey;
 const PublicKey = bcoin.hd.PublicKey;
 
-const { getGlobal } = require('electron').remote;
+const {getGlobal} = require('electron').remote;
 const appData = getGlobal('shared').appData;
 
 //TODO env variable with network
@@ -50,7 +49,7 @@ export const getKeysList = () => {
   }
 };
 
-export async function getSignKeysList (tx) {
+export async function getSignKeysList(tx) {
 
   try {
     const dir = path.resolve(appData, 'signatureSoftware');
@@ -112,7 +111,7 @@ export async function getSignKeysList (tx) {
 };
 
 
-function keyEncrypt (mnemonic, passphrase) {
+function keyEncrypt(mnemonic, passphrase) {
   const algorithm = 'aes256';
   const inputEncoding = 'utf8';
   const outputEncoding = 'hex';
@@ -125,7 +124,7 @@ function keyEncrypt (mnemonic, passphrase) {
 }
 
 
-export function keyDecrypt (hash, passphrase) {
+export function keyDecrypt(hash, passphrase) {
   const algorithm = 'aes256';
   const inputEncoding = 'utf8';
   const outputEncoding = 'hex';
@@ -188,3 +187,6 @@ export const ethToChecksumAddress = function (address) {
 
   return result
 };
+
+
+//const test = ;

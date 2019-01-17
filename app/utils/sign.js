@@ -119,6 +119,8 @@ export function signBTC(key, tx, path) {
 }
 
 
+
+
 async function signSegwitBTC(key, tx, path) {
   const isLedger = key.currentKey === 'ledger';
 
@@ -226,12 +228,13 @@ async function signSegwitBTC(key, tx, path) {
       associatedKeysets.push(`${btcPath}/${derivationIndex}`);
     });
 
-    console.log(JSON.stringify({ledgerCoins: inputs, associatedKeysets, outputScript: outputScriptHex}));
+    //console.log(JSON.stringify({ledgerCoins: inputs, associatedKeysets, outputScript: outputScriptHex}));
 
     result = await ledger.btc.signP2SHTransaction(inputs, associatedKeysets, outputScriptHex, 0, 1, true);
   }
 
 
+  console.log(result, 'RESULT');
   spend.inputs.forEach((input, i) => {
 
     const hash = input.prevout.hash;
@@ -242,7 +245,7 @@ async function signSegwitBTC(key, tx, path) {
     else spend.scriptInput(i, coin, ring);
 
     //spend.signInputLedger(i, coin, ring, result[0])
-    isLedger ? spend.signInput(i, coin, ring, 1, result[0]) : spend.signInput(i, coin, ring, 1);
+    isLedger ? spend.signInput(i, coin, ring, 1, result[i]) : spend.signInput(i, coin, ring, 1);
   });
 
   console.log(spend.verify(), 'verify');
