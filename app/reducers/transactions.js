@@ -2,6 +2,7 @@ import {
   LOAD_TRANSACTION,
   HANDLE_INPUT,
   GET_KEYS,
+  GET_KEYS_FAIL,
   SIGN_TX
 } from '../actions/transactions';
 
@@ -18,8 +19,9 @@ export default function tx (state = defaultState, action) {
     case HANDLE_INPUT:
       return {...state, [action.data.field]: action.data.val };
     case GET_KEYS:
-      console.log(action.data, 'in reducer');
       return {...state, keys: action.data};
+    case GET_KEYS_FAIL:
+      return state;
     case SIGN_TX:
       return {...state, result: action.data, passphrase: '', currentKey: '', tx: null};
     default:

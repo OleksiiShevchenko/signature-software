@@ -9,6 +9,7 @@ import Keys from '../keys';
 import Signature from '../signature';
 import Container from '../../components/container';
 import routes from '../../constants/routes.json';
+import Notification from '../../components/notification';
 
 
 export default class Home extends Component {
@@ -21,6 +22,7 @@ export default class Home extends Component {
           <Route path={routes.KEYS} component={Keys} />
           <Route path={routes.SIGN} component={Signature} />
         </Container>
+        <Notification/>
       </div>
     );
   }

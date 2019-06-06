@@ -74,8 +74,6 @@ export async function getSignKeysList(tx) {
       data.push(ledgerFile);
     }
 
-    console.log(data, 'keys');
-
     let filtered = [];
 
     if (tx.currency === 'BTC') {
@@ -105,7 +103,6 @@ export async function getSignKeysList(tx) {
     return Promise.resolve(filtered);
 
   } catch (e) {
-    console.error(e);
     return e;
   }
 };

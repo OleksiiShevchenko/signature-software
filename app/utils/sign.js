@@ -31,7 +31,7 @@ const ethPath = `m/44'/60'/0'/0`;
 export function signBTC(key, tx, path) {
 
   //Only segwit
-  return signSegwitBTC(key, tx, path);
+  //return signSegwitBTC(key, tx, path);
 
 
   //TODO refactor P2SH addresses to work for multiple inputs
@@ -244,8 +244,8 @@ async function signSegwitBTC(key, tx, path) {
     if (!isFirstSignature) spend.view.addCoin(coin);
     else spend.scriptInput(i, coin, ring);
 
-    //spend.signInputLedger(i, coin, ring, result[0])
-    isLedger ? spend.signInput(i, coin, ring, 1, result[i]) : spend.signInput(i, coin, ring, 1);
+    //spend.signInput(i, coin, ring, 1, result[i])
+    isLedger ? spend.signInputLedger(i, coin, ring, result[i]) : spend.signInput(i, coin, ring, 1);
   });
 
   console.log(spend.verify(), 'verify');

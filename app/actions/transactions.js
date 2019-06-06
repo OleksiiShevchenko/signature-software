@@ -1,6 +1,6 @@
 import {getSignKeysList} from '../utils/utils';
 import { signBTC, signETH } from '../utils/sign';
-
+import { hideNotification } from '../actions/notifications';
 
 export function loadSign(tx) {
   return dispatch => {
@@ -31,6 +31,7 @@ export function handleInput(val, field) {
 }
 
 export const GET_KEYS = 'GET_KEYS';
+export const GET_KEYS_FAIL = 'GET_KEYS_FAIL';
 
 export function getKeys(tx) {
   return async (dispatch) => {
@@ -41,11 +42,14 @@ export function getKeys(tx) {
         data: keys
       });
     } catch (e) {
-      console.error(e);
+      console.log('test');
       dispatch({
-        type: GET_KEYS,
-        data: []
+        type: GET_KEYS_FAIL,
+        data: {
+          content:'Make sure you are running BTC app on your ledger'
+        }
       });
+      setTimeout(() => dispatch(hideNotification()), 3000);
     }
   };
 }

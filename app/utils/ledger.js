@@ -2,6 +2,7 @@ import LedgerTransport from "@ledgerhq/hw-transport-node-hid";
 import LedgerBtc from "@ledgerhq/hw-app-btc";
 import LedgerEth from "@ledgerhq/hw-app-eth";
 
+const EventEmitter = require('events');
 import { map, compose, dropLast, last, length } from 'ramda';
 import * as bippath from 'bip32-path';
 import * as BIP32 from 'bip32';
@@ -10,9 +11,10 @@ import { crypto, HDNode } from 'bitcoinjs-lib';
 const bcoin = require('bcoin');
 
 
-class Ledger {
+class Ledger extends EventEmitter {
 
   constructor() {
+    super();
     this.connected = false;
   }
 
@@ -24,7 +26,6 @@ class Ledger {
     try {
       this.listen();
     } catch (e) {
-      console.log(e);
       throw new Error(e);
     }
   }
@@ -36,11 +37,13 @@ class Ledger {
         switch (e.type) {
           case 'add':
             self.connected = true;
-            console.log("Ledger device connected", e);
+            //console.log("Ledger device connected", e);
+            self.emit('ledgerConnect', e);
             break;
           case 'remove':
             this.connected = false;
-            console.log("Ledger device disconnected", e);
+            //console.log("Ledger device disconnected", e);
+            self.emit('ledgerDisconnect', e);
             break;
           default:
             return;

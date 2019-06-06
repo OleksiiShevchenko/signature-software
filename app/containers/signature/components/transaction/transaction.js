@@ -14,6 +14,8 @@ import {
   Callout,
   HTMLSelect
 } from "@blueprintjs/core";
+import Ledger from '../../../../utils/ledger';
+
 
 export default class Transaction extends Component {
 
@@ -36,7 +38,8 @@ export default class Transaction extends Component {
 
   renderKeys () {
     const { keys } = this.props;
-    if (!keys) return;
+
+    if (!keys || !Array.isArray(keys)) return;
     return keys.map(key => {
       return (<option key={key.name} value={key.name}>{key.name}</option>);
     });
@@ -45,6 +48,7 @@ export default class Transaction extends Component {
   render() {
     const { tx, passphrase, currentKey } = this.props;
     if (!tx) return null;
+
 
     return (
       <div className={styles.transaction}>
